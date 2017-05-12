@@ -17,6 +17,8 @@ class Device:
         return
     def deleteuser(self):
         return
+    def setusertime(self):
+        return 
 
     def DealWithJson(self,body):
         info_deel = json.loads(body)
@@ -34,6 +36,8 @@ class Device:
             return self.setopentime(info_deel) #call back function
         elif info_deel["key"] == 'deleteuser':
             return self.deleteuser(info_deel)
+        elif info_deel["key"] == 'setusertime':
+            return self.setusertime(info_deel)
 
     def MQ(self,id,brand):
         username = 'haochengqian'
@@ -41,10 +45,10 @@ class Device:
         user_pwd = pika.PlainCredentials(username,pwd)
         conn = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1',5672))
         chan = conn.channel()
-        chan.queue_declare(queue= str(id))
+        chan.queue_declare(queue= brand + str(id))
         def callback(ch,method,properties,body):
             self.DealWithJson(body)
-        chan.basic_consume(callback,queue = 'test',no_ack=True)
+        chan.basic_consume(callback,queue = brand+str(id),no_ack=True)
         logging.warning("waiting for msg .")
         chan.start_consuming()
 

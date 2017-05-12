@@ -1,15 +1,16 @@
-import zk
+import zk,DeviceManager
 import win32com.client,ctypes,datetime,sys,pika
 import json,multiprocessing,os,pickle,logging
-import smtplib,time
+import smtplib,time,threading
 
-class Process_Controller:
+class Process_Controller(DeviceManager.Device):
     process = []
+    threads = []
     def __init__(self):
         self.idnum = 0
         self.pickle_file_position = 'ipstore.pkl'
         self.OpenProcess()
-
+        
     def LoadFile(self):
         self.pickle_file = open(self.pickle_file_position,'r')
     
@@ -23,7 +24,21 @@ class Process_Controller:
             selfdevice = zk.zk(ip,port,n,brand)
         else:
             return
-            
+
+    def adddevice(self,info_deel):
+        ip = info_deel["ip"]
+        port = info_deel["port"]
+        id = info_deel["id"]
+        position = info_deel["position"]
+        brand = info_deel["brand"]
+        WritePickle(ip,port,id,position,brand)
+        self.process.insert(self.processCount,multiprocessing.Process(target = self.CreateProcess,args = (ip,port,id,brand,)) )
+        self.process[self.processCount].start()
+        self.processCount = self.processCount + 1
+
+    def OpenRecvMessageThread(self):
+        self.MQ(1,"MainProcess")
+
     def OpenProcess(self):
         self.WriteLogInit()
         self.WritePickle('10.0.1.136',4370,1,'hsdjklsfsdf','zk')
@@ -39,6 +54,7 @@ class Process_Controller:
             id = dic_ip_port_id_info_brand["id"]
             position = dic_ip_port_id_info_brand["position"]
             brand = dic_ip_port_id_info_brand["brand"]
+            threads = threading.Thread(target = self.OpenRecvMessageThread,args=())
             self.process.insert(self.processCount,multiprocessing.Process(target = self.CreateProcess,args = (ip,port,id,brand,)) )
             self.process[self.processCount].start()
             logging.warning("process.id " + str(self.process[self.processCount].pid))
