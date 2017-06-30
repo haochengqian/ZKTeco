@@ -3,41 +3,41 @@ import json,multiprocessing,os,pickle,logging
 import smtplib,time
 
 class Device:
-    def fetchall(self): #implement
+    def FetchAll(self): #implement
         return
-    def addinfo(self):
+    def AddInfo(self):
         return
-    def doorstatue(self):
+    def DoorStatue(self):
         return
-    def openrecord(self):
+    def OpenRecord(self):
         return
-    def addip(self):
+    def AddIP(self):
         return
-    def setopentime(self):
+    def SetOpenTime(self):
         return
-    def deleteuser(self):
+    def DeleteUser(self):
         return
-    def setusertime(self):
+    def SetUserTime(self):
         return 
 
     def DealWithJson(self,body):
         info_deel = json.loads(body)
         if info_deel["key"] == 'fetchall': #fetch all information
-            return self.fetchall(info_deel)
+            return self.FetchAll(info_deel)
         elif info_deel["key"] == 'addinfo': #add one piece information
-            return self.addinfo(info_deel)
+            return self.AddInfo(info_deel)
         elif info_deel["key"] == 'doorstatue': #query door statue
-            return self.doorstatue(info_deel)
+            return self.DoorStatue(info_deel)
         elif info_deel["key"] == 'openrecord': #add open door time index
-            return self.openrecord(info_deel)
+            return self.OpenRecord(info_deel)
         elif info_deel["key"] == 'addip': #add an ip of door
-            return self.addip(info_deel)
+            return self.AddIP(info_deel)
         elif info_deel["key"] == 'setopentime':
-            return self.setopentime(info_deel) #call back function
+            return self.SetOpenTime(info_deel) #call back function
         elif info_deel["key"] == 'deleteuser':
-            return self.deleteuser(info_deel)
+            return self.DeleteUser(info_deel)
         elif info_deel["key"] == 'setusertime':
-            return self.setusertime(info_deel)
+            return self.SetUserTime(info_deel)
 
     def MQ(self,id,brand):
         username = 'haochengqian'
@@ -45,10 +45,16 @@ class Device:
         user_pwd = pika.PlainCredentials(username,pwd)
         conn = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1',5672))
         chan = conn.channel()
-        chan.queue_declare(queue= brand + str(id))
-        def callback(ch,method,properties,body):
-            self.DealWithJson(body)
-        chan.basic_consume(callback,queue = brand+str(id),no_ack=True)
+        if brand == 'zk':
+            chan.queue_declare(queue= brand + str(id))
+            def callback(ch,method,properties,body):
+                self.DealWithJson(body)
+            chan.basic_consume(callback,queue = brand+str(id),no_ack=True)
+        elif brand == 'MainProcess':
+            chan.queue_declare(queue="MainProcess")
+            def callback(ch,method,properties,body):
+                self.DealWithJson(body)
+            chan.basic_consume(callback,queue="MainProcess",no_ack=True)
         logging.warning("waiting for msg .")
         chan.start_consuming()
 

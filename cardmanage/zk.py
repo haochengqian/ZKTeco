@@ -21,7 +21,7 @@ class zk(DeviceManager.Device):
                 else:
                     break
             
-    def fetchall(self,info_deel):#fetch all information not shutdown key : fetchall (ckecked)
+    def FetchAll(self,info_deel):#fetch all information not shutdown key : fetchall (ckecked)
         uid = {}
         self.zk.ReadAllUserID(1)
         while 1:
@@ -33,7 +33,7 @@ class zk(DeviceManager.Device):
                     uid[idNum] = username.split(u'\x00')[0].encode('gbk')
         logging.warning(uid)
         return
-    def addinfo(self,info_deel):
+    def AddInfo(self,info_deel):
         idconnect = 1
 #        rev,temp1,temp2,temp3,temp4 = self.zk.GetUserInfo(idconnect,1)
         idwUser = info_deel["userid"]
@@ -59,7 +59,7 @@ class zk(DeviceManager.Device):
             logging.warning("setuserinfo " + str(idwUser) + " fall!" + str(rev3))
         return #add user information  key: addinfo,userid:,username:,userpwd:,privilege:,cardnumber:,enable:,usergroup:
 
-    def doorstatue(self,info_deel):
+    def DoorStatue(self,info_deel):
         idconnect = 1
         exsit,state = self.zk.GetDoorState(idconnect)
         if exsit == 1:
@@ -69,7 +69,7 @@ class zk(DeviceManager.Device):
             logging.warning("cant connect door")
         return #check doorstatue (checked)
 
-    def openrecord(self,info_deel):
+    def OpenRecord(self,info_deel):
         #logging.warning(str(info_deel))
         idconnect = 1
         tzIndex = info_deel["tzIndex"]
@@ -81,14 +81,14 @@ class zk(DeviceManager.Device):
             logging.warning("set time range fail")
         return #set open door time range
 
-    def setopentime(self,info_deel):
+    def SetOpenTime(self,info_deel):
         idconnect = 1
         groupIndex = info_deel["usergroup"]
         groupTZs = info_deel["grouptzs"]
         rev = self.zk.SetGroupTZStr(idconnect,groupIndex,groupTZs)
         return #set usergroup time range number
 
-    def deleteuser(self,info_deel):
+    def DeleteUser(self,info_deel):
         idconnect = 1
         userNumber = info_deel["usernumber"]
         recv = self.zk.SSR_DeleteEnrollData(idconnect,userNumber,12)
@@ -100,7 +100,7 @@ class zk(DeviceManager.Device):
             logging.warning("delete " + str(userNumber) + " fail! " + str(recv2))
         return #delete user info
 
-    def setusertime(self,info_deel):
+    def SetUserTime(self,info_deel):
         idconnect = 1
         usernumber = long(info_deel["usernumber"])
         tzs = info_deel["tzs0"]+":"+info_deel["tzs1"]+":"+info_deel["tzs2"]+":"+info_deel["tzs3"]
